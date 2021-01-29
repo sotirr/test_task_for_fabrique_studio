@@ -1,3 +1,73 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
+
+class Quiz(models.Model):
+    title = models.CharField(max_length=100, blank=False)
+    description = models.TextField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+
+    class Meta:
+        verbose_name = "Quiz"
+        verbose_name_plural = "Quizzes"
+
+    def __str__(self):
+        return self.title
+
+
+class Question(models.Model):
+    question_types = (
+        ('radio', 'radio'),
+        ('checkbox', 'checkbox'),
+        ('text', 'text'),
+    )
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question_text = models.CharField(max_length=1000)
+    question_type = models.CharField(
+        max_length=8,
+        choices=question_types,
+        default=_('radio')
+    )
+
+    class Meta:
+        verbose_name = "Question"
+        verbose_name_plural = "Questions"
+
+    def __str__(self):
+        return self.question_text
+
+
+class Choice(models.Model):
+    question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=1000)
+
+    class Meta:
+        verbose_name = "Choice"
+        verbose_name_plural = "Choices"
+
+    def __str__(self):
+        return self.choice_text
+
+
+class AnswerTracker(models.Model):
+    customer = models.IntegerField(verbose_name=_('customer_id'))
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_id = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    answer_text = models.TextField()
+
+    class Meta:
+        verbose_name = "Answer Tracker"
+        verbose_name_plural = "Answers Tracker"
+
+    def clean(self):
+        super().clean()
+        if not any([self.choice_id, self.answer_text]):
+            raise ValidationError(
+                    'Answers choice or text fields must be filled'
+                )
+
+    def __str__(self):
+        return f'{self.customer} - {self.question_id} - {self.choice_id or self.answer_text}'

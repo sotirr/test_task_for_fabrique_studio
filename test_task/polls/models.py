@@ -4,10 +4,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Quiz(models.Model):
-    title = models.CharField(max_length=100, blank=False)
-    description = models.TextField()
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
 
     class Meta:
         verbose_name = "Quiz"
@@ -15,6 +15,13 @@ class Quiz(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        super().clean()
+        if self.start_date > self.end_date:
+            raise ValidationError(
+                    'Start date can not be over end date'
+                )
 
 
 class Question(models.Model):

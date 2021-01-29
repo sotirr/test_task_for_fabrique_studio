@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres
+    container_name: db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_password
+      - POSTGRES_DB=test_task
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:

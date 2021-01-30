@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -23,6 +24,11 @@ class Quiz(models.Model):
                     'Start date can not be over end date'
                 )
 
+    def get_active():
+        today = timezone.now().date()
+        active_quizzes = Quiz.objects.filter(start_date__gte=today)
+        return active_quizzes
+    
 
 class Question(models.Model):
     question_types = (
@@ -62,8 +68,8 @@ class AnswerTracker(models.Model):
     customer = models.IntegerField(verbose_name=_('customer_id'))
     quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_id = models.ForeignKey(Choice, on_delete=models.CASCADE)
-    answer_text = models.TextField()
+    choice_id = models.ForeignKey(Choice, on_delete=models.CASCADE, blank=True, null=True)
+    answer_text = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Answer Tracker"

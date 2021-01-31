@@ -4,8 +4,8 @@ from rest_framework.views import APIView, Response, Request
 from rest_framework import status
 from django.shortcuts import get_list_or_404
 
-from .models import Quiz, Question
-from .serializer import QuizSerializer, QuestionSerializer, AnswerSerializer
+from .models import Quiz, Question, AnswerTracker
+from .serializer import QuizSerializer, QuestionSerializer, AnswerSerializer, AnswerTrackerSerializer
 
 
 class QuizzesListView(APIView):
@@ -23,10 +23,10 @@ class QuizDetailView(APIView):
         return Response(serialized_data.data)
 
 
-class AnswerTraker(APIView):
+class AnswerTrakerView(APIView):
     def post(self, request: Request, pk: int) -> Response:
         parsed_answers: List[dict] = self.parse_request(request, pk)
-        serialized_answers = AnswerSerializer(data=parsed_answers, many=True)
+        serialized_answers = AnswerTrackerSerializer(data=parsed_answers, many=True)
         if serialized_answers.is_valid(raise_exception=True):
             serialized_answers.save()
             return Response(serialized_answers.data, status=status.HTTP_201_CREATED)
@@ -47,3 +47,19 @@ class AnswerTraker(APIView):
             else:
                 parsed_answers.append(answer.copy())
         return parsed_answers
+
+
+class ReportView(APIView):
+    def get(self, request: Request) -> Response:
+        customer: str = request.query_params.get('customer')
+        report = get_list_or_404(AnswerTracker, customer=customer)
+        serialized_report = AnswerSerializer(report, many=True)
+        parsed_report = self.parse_report(serialized_report.data)
+        return Response(parsed_report)
+
+    def parse_report(self, serialized_report: List[dict]) -> List[dict]:
+        quizzes: set = set(answer['quiz'] for answer in serialized_report)
+        parsed_report: dict = {quiz: [] for quiz in quizzes}
+        for answer in serialized_report:
+            parsed_report[answer.pop('quiz')].append(answer)
+        return parsed_report

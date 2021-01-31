@@ -79,3 +79,5 @@
 База данных в проекте используется postgres
 
 Упрощена схема базы:
+
+![bd_scheme](https://user-images.githubusercontent.com/47517203/106393569-b0512500-6419-11eb-83de-6051a4087b15.png)

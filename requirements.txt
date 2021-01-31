@@ -4,4 +4,4 @@ django-nested-admin==3.3.3
 psycopg2==2.8.6
 pytz==2020.5
 sqlparse==0.4.1
-drf-yasg2==1.17.1
+drf-yasg==1.17.1

@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Quiz(models.Model):
+    ''' Model for storing quizzes '''
+
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     start_date = models.DateField()
@@ -18,19 +20,24 @@ class Quiz(models.Model):
         return self.title
 
     def clean(self):
+        ''' Checks dates '''
         super().clean()
         if self.start_date > self.end_date:
             raise ValidationError(
                     'Start date can not be over end date'
                 )
 
+    @staticmethod
     def get_active():
+        ''' Returns active quizzes '''
         today = timezone.now().date()
         active_quizzes = Quiz.objects.filter(start_date__gte=today)
         return active_quizzes
-    
+
 
 class Question(models.Model):
+    ''' Model for storing questions '''
+
     question_types = (
         ('radio', 'radio'),
         ('checkbox', 'checkbox'),
@@ -53,6 +60,8 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
+    ''' Model for storing choices '''
+
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=1000)
 
@@ -65,6 +74,8 @@ class Choice(models.Model):
 
 
 class AnswerTracker(models.Model):
+    ''' Model for storing customer's answers '''
+
     customer = models.IntegerField(verbose_name=_('customer_id'))
     quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -76,11 +87,12 @@ class AnswerTracker(models.Model):
         verbose_name_plural = "Answers Tracker"
 
     def clean(self):
+        ''' Checks answers, at lest one answer must be given'''
         super().clean()
         if not any([self.choice_id, self.answer_text]):
             raise ValidationError(
                     'Answers choice or text fields must be filled'
-                )
+            )
 
     def __str__(self):
         return f'{self.customer} - {self.question_id} - {self.choice_id or self.answer_text}'

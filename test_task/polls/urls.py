@@ -1,11 +1,11 @@
 from django.urls import path
 
-from .views import QuizzesListView, QuizDetailView, AnswerTrakerView, ReportView
+from . import views
 
 app_name = 'polls'
 urlpatterns = [
-    path('', QuizzesListView.as_view(), name='quizzes_list'),
-    path('<int:pk>/', QuizDetailView.as_view(), name='quizzes_detail'),
-    path('<int:pk>/answer/', AnswerTrakerView.as_view()),
-    path('report/', ReportView.as_view(), name='report'),
+    path('', views.QuizzesListView.as_view(), name='quizzes_list'),
+    path('<int:quiz_id>/', views.QuizDetailView.as_view(), name='quizzes_detail'),
+    path('<int:quiz_id>/answers/', views.AnswerTrakerView.as_view()),
+    path('report/', views.ReportView.as_view(), name='report'),
 ]
